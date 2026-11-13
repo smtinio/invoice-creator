@@ -1,26 +1,227 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Moderna Library tokens
+   ---------------------------------------------------------------------------
+   Every value here comes from Figma via `get_variable_defs`. The custom
+   property names match the Figma variable names exactly (Figma's
+   `bertie/text/primary` -> `--bertie-text-primary`) so a token renamed in
+   Figma is findable in code by searching the same string.
+
+   Nothing outside this file should contain a raw hex value.
+--------------------------------------------------------------------------- */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surface */
+  --bertie-surface-default: #ffffff; /* Page and card background */
+  --bertie-surface-subtle: #f7f7f7; /* Sidebar, table header, app canvas */
+  --bertie-surface-muted: #ededed; /* Hover rows, input disabled */
+
+  /* Border */
+  --bertie-border-default: #e0e0e0; /* Dividers, card + input borders */
+  --bertie-border-strong: #bdbdbd; /* Input hover, emphasized dividers */
+  --bertie-border-focus: #1f5fd1; /* Focus ring */
+
+  /* Text */
+  --bertie-text-primary: #333333; /* Body copy, headings, primary labels */
+  --bertie-text-secondary: #666666; /* Supporting text, metadata, captions */
+  --bertie-text-tertiary: #767676; /* Placeholders, helper text (min AA on white) */
+  --bertie-text-disabled: #ababab; /* Disabled labels only — not readable content */
+  --bertie-text-inverse: #ffffff; /* Text on dark / filled surfaces */
+  --bertie-text-link: #1f5fd1; /* Inline links */
+
+  /* Primary */
+  --bertie-primary-default: #1f5fd1; /* Primary actions, focus, selected states */
+  --bertie-primary-hover: #174ba8; /* Primary hover / pressed */
+  --bertie-primary-subtle: #eaf0fb; /* Selected row, primary tint backgrounds */
+
+  /* Secondary */
+  --bertie-secondary-default: #333333; /* Secondary actions */
+  --bertie-secondary-hover: #1a1a1a; /* Secondary hover / pressed */
+
+  /* Status */
+  --bertie-error-default: #c62828; /* Errors, destructive actions, validation */
+  --bertie-error-hover: #a11f1f; /* Error / destructive hover + pressed */
+  --bertie-error-subtle: #fdecec; /* Error banner / field background */
+  --bertie-success-default: #1e7d3c; /* Published, saved, success */
+  --bertie-success-subtle: #e8f5ec; /* Success banner background */
+  --bertie-warning-default: #a85600; /* Warnings, unsaved changes */
+  --bertie-warning-subtle: #fff4e5; /* Warning banner background */
+
+  /* Type families. All three are on Google Fonts and are loaded by next/font
+     in layout.tsx, which sets the --font-* variables below. The quoted names
+     and system stack after each var() are fallbacks for the brief moment
+     before the webfont lands, and for anyone with the face installed. */
+  --bertie-font-headline: var(--font-stack-sans-headline, "Stack Sans Headline"),
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bertie-font-text: var(--font-stack-sans-text, "Stack Sans Text"),
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bertie-font-display: var(
+      --font-special-gothic-expanded-one,
+      "Special Gothic Expanded One"
+    ),
+    var(--bertie-font-headline);
+
+  /* shadow/modal — two stacked drop shadows, in Figma's order. */
+  --bertie-shadow-modal: 0 2px 6px rgba(0, 0, 0, 0.08),
+    0 12px 32px rgba(0, 0, 0, 0.16);
 }
 
+/* Expose the tokens as Tailwind utilities: bg-surface-subtle,
+   text-text-secondary, border-border-default, shadow-modal, and so on.
+   `inline` keeps the var() reference in the output rather than inlining the
+   hex, so the tokens stay overridable at runtime. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface-default: var(--bertie-surface-default);
+  --color-surface-subtle: var(--bertie-surface-subtle);
+  --color-surface-muted: var(--bertie-surface-muted);
+
+  --color-border-default: var(--bertie-border-default);
+  --color-border-strong: var(--bertie-border-strong);
+  --color-border-focus: var(--bertie-border-focus);
+
+  --color-text-primary: var(--bertie-text-primary);
+  --color-text-secondary: var(--bertie-text-secondary);
+  --color-text-tertiary: var(--bertie-text-tertiary);
+  --color-text-disabled: var(--bertie-text-disabled);
+  --color-text-inverse: var(--bertie-text-inverse);
+  --color-text-link: var(--bertie-text-link);
+
+  --color-primary-default: var(--bertie-primary-default);
+  --color-primary-hover: var(--bertie-primary-hover);
+  --color-primary-subtle: var(--bertie-primary-subtle);
+
+  --color-secondary-default: var(--bertie-secondary-default);
+  --color-secondary-hover: var(--bertie-secondary-hover);
+
+  --color-error-default: var(--bertie-error-default);
+  --color-error-hover: var(--bertie-error-hover);
+  --color-error-subtle: var(--bertie-error-subtle);
+  --color-success-default: var(--bertie-success-default);
+  --color-success-subtle: var(--bertie-success-subtle);
+  --color-warning-default: var(--bertie-warning-default);
+  --color-warning-subtle: var(--bertie-warning-subtle);
+
+  --font-display: var(--bertie-font-display);
+  --font-headline: var(--bertie-font-headline);
+  --font-text: var(--bertie-font-text);
+
+  --shadow-modal: var(--bertie-shadow-modal);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------------------------------------------------------------------------
+   Type styles
+   ---------------------------------------------------------------------------
+   One class per Figma text style, named after it: `display/3/regular` becomes
+   `.type-display-3-regular`. A text style bundles family, size, weight, line
+   height and letter spacing, so it is one class rather than five utilities.
+
+   Figma reports letter spacing here as a percentage of the font size, which is
+   why -0.5 shows up as -0.18px on 36px text. `em` expresses that directly and
+   stays correct if a size changes.
+--------------------------------------------------------------------------- */
+
+@layer components {
+  .type-display-3-regular {
+    font-family: var(--bertie-font-display);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 44px;
+    letter-spacing: -0.005em;
+  }
+
+  .type-heading-1-regular {
+    font-family: var(--bertie-font-headline);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 40px;
+    letter-spacing: -0.005em;
+  }
+
+  .type-heading-1-bold {
+    font-family: var(--bertie-font-headline);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    letter-spacing: -0.005em;
+  }
+
+  .type-paragraph-1-regular {
+    font-family: var(--bertie-font-text);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0;
+  }
+
+  .type-paragraph-2-regular {
+    font-family: var(--bertie-font-text);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+
+  .type-paragraph-2-medium {
+    font-family: var(--bertie-font-text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+
+  .type-utility-1-regular {
+    font-family: var(--bertie-font-text);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+  }
+
+  .type-utility-1-medium {
+    font-family: var(--bertie-font-text);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+  }
+
+  .type-utility-2-regular {
+    font-family: var(--bertie-font-text);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.005em;
+  }
+
+  .type-utility-2-medium {
+    font-family: var(--bertie-font-text);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.005em;
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+   ---------------------------------------------------------------------------
+   The Figma file defines only a light theme, so there is no dark mode here.
+   Adding one would mean inventing colors the design system has not specified.
+--------------------------------------------------------------------------- */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bertie-surface-default);
+  color: var(--bertie-text-primary);
+  font-family: var(--bertie-font-text);
+}
+
+/* One focus treatment for every interactive element, using the token the
+   design system reserves for exactly this ("border/focus — Focus ring").
+   The ring's thickness and offset are not specified in Figma; see README. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--bertie-border-focus);
+    outline-offset: 2px;
+  }
 }
