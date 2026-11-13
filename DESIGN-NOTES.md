@@ -63,6 +63,13 @@ are worth a decision.
   is wired to a file picker and the file is held in memory for the session only
   — nothing is uploaded or persisted. Say the word and I will pull it.
 
+## Product name spelling
+
+The development notice (Desktop - 7) reads **"DueDay Is Still In Development"**
+while the wordmark on every frame reads **"Dueday"**. The banner uses the
+frame's spelling verbatim, so the two differ on screen today. One of them
+should change — the name is still an open question in §12 either way.
+
 ## Tax suggestion
 
 The banner is built, but `getTaxSuggestion()` returns null for every address,

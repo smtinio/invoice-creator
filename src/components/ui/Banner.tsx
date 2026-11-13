@@ -51,7 +51,10 @@ export function Banner({
       role="status"
       aria-live="polite"
       className={[
-        "flex w-full items-start gap-[12px] rounded-[8px] border px-[24px] py-[20px]",
+        "flex w-full gap-[12px] rounded-[8px] border px-[24px] py-[20px]",
+        // Inline centres its single row, but only once it actually is one row
+        // — below sm it stacks, so the icon aligns to the title instead.
+        layout === "inline" ? "items-start sm:items-center" : "items-start",
         TONE_CLASSES[tone],
         className,
       ].join(" ")}
@@ -62,20 +65,26 @@ export function Banner({
         alt=""
         width={20}
         height={20}
-        className="mt-[2px] shrink-0"
+        className={`shrink-0 ${layout === "inline" ? "" : "mt-[2px]"}`}
       />
 
       <div
         className={
           layout === "inline"
-            ? "flex min-w-0 flex-1 flex-wrap items-baseline gap-x-[8px] gap-y-[4px]"
+            ? // One row from sm up, as the frame draws it. On a phone there is
+              // no room, and wrapping mid-row squeezes the message into a
+              // narrow column, so it stacks instead.
+              [
+                "flex min-w-0 flex-1 flex-col gap-[2px]",
+                "sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-[6px]",
+              ].join(" ")
             : "flex min-w-0 flex-1 flex-col gap-[4px]"
         }
       >
         {title && (
           <p
             className={`type-paragraph-2-bold text-text-primary ${
-              layout === "inline" ? "shrink-0" : "w-full"
+              layout === "inline" ? "sm:shrink-0" : "w-full"
             }`}
           >
             {title}
@@ -83,7 +92,7 @@ export function Banner({
         )}
         <p
           className={`type-paragraph-2-regular text-text-secondary ${
-            layout === "inline" ? "min-w-0 flex-1" : "w-full"
+            layout === "inline" ? "min-w-0 sm:flex-1" : "w-full"
           }`}
         >
           {children}
