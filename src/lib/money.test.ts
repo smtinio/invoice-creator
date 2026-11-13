@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  EARLY_PAYMENT_TERMS,
   calculateTotals,
   discountAmount,
+  earlyPaymentOutcome,
   formatBasisPoints,
   formatCents,
   formatQuantity,
@@ -213,6 +215,65 @@ describe("calculateTotals", () => {
     expect(totals.discountedServices).toBe(0);
     expect(totals.taxAmount).toBe(0);
     expect(totals.total).toBe(2_000); // expenses still due
+  });
+});
+
+describe("earlyPaymentOutcome", () => {
+  // The Figma frame (Desktop - 4) states every figure in this scenario, so it
+  // doubles as a check that the whole pipeline agrees with the design.
+  const designScenario = calculateTotals({
+    services: [service(3000, 40_000), service(4000, 7_500)], // 3 x $400, 4 x $75
+    expenses: [expense(6_000), expense(4_500)], // $60 + $45
+    discount: { kind: "percent", basisPoints: 1_000 }, // 10%
+    taxBasisPoints: 0,
+  });
+
+  it("reproduces every total shown in the design", () => {
+    expect(designScenario.servicesSubtotal).toBe(150_000); // $1,500.00
+    expect(designScenario.discountAmount).toBe(15_000); // -$150.00
+    expect(designScenario.expensesTotal).toBe(10_500); // $105.00
+    expect(designScenario.taxAmount).toBe(0); // $0.00
+    expect(designScenario.total).toBe(145_500); // $1,455.00
+  });
+
+  it("reproduces the design's 2/10 Net 30 figures", () => {
+    const outcome = earlyPaymentOutcome(designScenario, { discountBasisPoints: 200 });
+    expect(outcome.discount).toBe(2_700); // $27.00
+    expect(outcome.amountIfPaidEarly).toBe(142_800); // $1,428.00
+  });
+
+  it("discounts services only, never expenses", () => {
+    const totals = calculateTotals({
+      services: [service(1000, 100_000)], // $1,000
+      expenses: [expense(100_000)], // $1,000 of expenses
+    });
+    // 2% of the services alone, not of the $2,000 total.
+    expect(earlyPaymentOutcome(totals, { discountBasisPoints: 200 }).discount).toBe(2_000);
+  });
+
+  it("is zero on an empty invoice", () => {
+    const totals = calculateTotals({ services: [], expenses: [] });
+    expect(earlyPaymentOutcome(totals, { discountBasisPoints: 200 })).toEqual({
+      discount: 0,
+      amountIfPaidEarly: 0,
+    });
+  });
+
+  it("rounds half up", () => {
+    const totals = calculateTotals({ services: [service(1000, 1_250)], expenses: [] });
+    // 2% of $12.50 = 25 cents exactly
+    expect(earlyPaymentOutcome(totals, { discountBasisPoints: 200 }).discount).toBe(25);
+    // 1% of $12.50 = 12.5 cents -> 13
+    expect(earlyPaymentOutcome(totals, { discountBasisPoints: 100 }).discount).toBe(13);
+  });
+
+  it("offers the conventional preset terms", () => {
+    expect(EARLY_PAYMENT_TERMS[0]).toMatchObject({
+      label: "2/10 Net 30",
+      discountBasisPoints: 200,
+      discountDays: 10,
+      netDays: 30,
+    });
   });
 });
 

@@ -35,10 +35,46 @@ should be checked against the real components.
 | Input | Disabled | `surface/muted` fill, `text/disabled` text |
 | Input | Leading icon | Not built — no screen needs one yet |
 | Button | Hover | `primary/hover`, `secondary/hover`, `error/hover` |
-| Button | Disabled | `surface/muted` fill, `text/disabled` label. Not specified anywhere |
+| Button | Disabled | `surface/muted` fill, `text/disabled` label — **confirmed** by the disabled Continue in the items frames |
+| Button | Outline / Tertiary | **Confirmed** by Back and Add service in the items frames: outline is a 1.5px primary border, tertiary is a primary label with no fill |
 | Dropzone | Drag-over | `border/focus` border, `primary/subtle` fill. Invented |
 | Dropzone | Filled | Thumbnail + filename + Replace/Remove links. **Not designed at all** — worth a real design |
-| Step | Complete | Not built. Needs the check icon, which this frame didn't export |
+| Step | Complete | **Built** — the items frames exported the check glyph |
+| Tab | Hover | `surface/subtle` fill. The component lists a Hover state but no frame shows it |
+| Select | Open | A native `<select>` draws its own menu. Figma uses the Menu component here, so the open list will not match the design |
+| Banner | Neutral / Success / Warning / Error | Only Info appears in a frame. The others use the matching status tokens, and all five currently reuse the Info glyph — the other icons were never exported |
+| Switch | all | Not a documented Moderna component — the frames contain flat "Switch (on)" / "Switch (off)" images. Rebuilt in CSS at 40x24 from those colours |
+
+## Scope that is in the design but not in the brief
+
+Two things appear in the items frames that `context.md` does not ask for. Both
+are built, because they are in the design you asked me to implement, but they
+are worth a decision.
+
+- **Early payment discount (2/10 Net 30).** Not mentioned in the brief, and §10
+  rules out automatic discounts. It is not an automatic discount: it is a
+  conditional offer that never changes Total due, which is why the card shows
+  the early figure and the full total side by side. The maths lives in
+  `earlyPaymentOutcome` and is tested against the design's own numbers.
+  Only "2/10 Net 30" is visible in the Figma Select, so the other three options
+  in the menu are the conventional ones and are a guess.
+- **Receipt attachments on expenses.** §10 lists these under "V1.1 ideas (not
+  now)", but the expanded-expenses frame has an attach control on every row. It
+  is wired to a file picker and the file is held in memory for the session only
+  — nothing is uploaded or persisted. Say the word and I will pull it.
+
+## Tax suggestion
+
+The banner is built, but `getTaxSuggestion()` returns null for every address,
+so it never renders today. That is deliberate: §7 says the rules must come from
+a maintained table or a tax API rather than a model's general knowledge, and
+which source to use is still open (§12). Showing a confident "Suggested from
+your address" with nothing behind it would be worse than showing nothing.
+
+`SAMPLE_SUGGESTION` in `lib/taxSuggestion.ts` holds the design's example copy so
+the banner can be previewed. Pass it to `TotalsPanel` in place of the null to
+see it. When a rules source is chosen, `getTaxSuggestion` is the only function
+that has to change.
 
 ## Deliberate differences from the frame
 
@@ -54,6 +90,17 @@ should be checked against the real components.
 - **Continue button.** Enabled at all times, matching the frame, which shows it
   blue over an empty form. Submitting with an empty business name shows an
   inline error instead of grey-out, so the reason is visible.
+- **Describe-it tab has no Back / Continue.** The Desktop - 3 frame has only the
+  heading, tabs and prompt — no actions row — so the code matches it. That does
+  leave no way back from that tab; worth a look.
+- **Vertical placement of the Describe-it tab.** Desktop - 3 centres its content
+  in the viewport while Desktop - 4 pins it 170px from the top. Following both
+  would make the page jump when you switch tabs, so both tabs are top-aligned
+  at 170px.
+- **Line-item column widths on mobile.** The frame's Qty 88 / Rate 128 /
+  Amount 112 / Remove 40 columns total more than a phone is wide, so below
+  640px the description takes its own line and the numeric fields share the
+  next one.
 
 ## Not specified
 

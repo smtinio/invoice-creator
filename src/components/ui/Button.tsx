@@ -15,15 +15,14 @@ interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
 }
 
 const VARIANT_CLASSES: Record<ButtonType, string> = {
-  primary:
-    "bg-primary-default text-text-inverse hover:bg-primary-hover",
-  secondary:
-    "bg-secondary-default text-text-inverse hover:bg-secondary-hover",
-  tertiary:
-    "bg-transparent text-text-primary hover:bg-surface-muted",
+  primary: "bg-primary-default text-text-inverse hover:bg-primary-hover",
+  secondary: "bg-secondary-default text-text-inverse hover:bg-secondary-hover",
+  // "Add service" / "Add expense" in the items frames: no fill, primary label.
+  tertiary: "bg-transparent text-primary-default hover:bg-primary-subtle",
   error: "bg-error-default text-text-inverse hover:bg-error-hover",
+  // "Back" in the items frames: 1.5px primary border, primary label.
   outline:
-    "border border-border-default bg-surface-default text-text-primary hover:border-border-strong",
+    "border-[1.5px] border-primary-default bg-surface-default text-primary-default hover:bg-primary-subtle",
 };
 
 export function Button({
@@ -43,8 +42,11 @@ export function Button({
         // Figma lists a Disabled state but does not show its colors. These use
         // the two tokens the system reserves for disabled UI; confirm against
         // the component before relying on them.
-        "disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-text-disabled",
-        "disabled:border-border-default disabled:hover:bg-surface-muted",
+        // Confirmed by the disabled "Continue to customer details" in the
+        // items frame: surface/muted fill, text/disabled label, no border.
+        "disabled:cursor-not-allowed disabled:border-transparent",
+        "disabled:bg-surface-muted disabled:text-text-disabled",
+        "disabled:hover:bg-surface-muted",
         className,
       ].join(" ")}
     />

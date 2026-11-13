@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -32,6 +33,7 @@ const EMPTY_PROFILE: BusinessProfileDraft = {
 };
 
 export default function YourDetailsPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<BusinessProfileDraft>(EMPTY_PROFILE);
   const [logo, setLogo] = useState<File | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -54,7 +56,9 @@ export default function YourDetailsPage() {
     }
 
     setNameError(null);
-    // Saving the profile and moving to step 2 comes next.
+    // Persisting the profile to IndexedDB is still to come; for now this just
+    // advances to step 2.
+    router.push("/items");
   }
 
   return (

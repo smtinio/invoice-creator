@@ -40,6 +40,7 @@ function Step({
   state: StepState;
 }) {
   const isActive = state === "active";
+  const isComplete = state === "complete";
 
   return (
     <li className="flex items-center gap-[8px]" aria-current={isActive ? "step" : undefined}>
@@ -47,12 +48,17 @@ function Step({
         className={[
           "flex size-[24px] shrink-0 items-center justify-center overflow-clip rounded-[12px]",
           "type-utility-2-medium",
-          isActive
+          isActive || isComplete
             ? "bg-primary-default text-text-inverse"
             : "bg-surface-muted text-text-secondary",
         ].join(" ")}
       >
-        {number}
+        {isComplete ? (
+          /* eslint-disable-next-line @next/next/no-img-element -- static SVG in /public */
+          <img src="/icons/check.svg" alt="" width={16} height={16} aria-hidden="true" />
+        ) : (
+          number
+        )}
       </span>
 
       {/* Labels are the first thing to go when the row runs out of room. The
@@ -60,13 +66,15 @@ function Step({
       <span
         className={[
           "hidden whitespace-nowrap md:inline",
-          isActive
-            ? "type-utility-1-medium text-text-primary"
-            : "type-utility-1-regular text-text-secondary",
+          isActive ? "type-utility-1-medium" : "type-utility-1-regular",
+          // A finished step keeps primary text; only upcoming ones recede.
+          isActive || isComplete ? "text-text-primary" : "text-text-secondary",
         ].join(" ")}
       >
         {label}
       </span>
+
+      {isComplete && <span className="sr-only">{`${label} — completed`}</span>}
     </li>
   );
 }

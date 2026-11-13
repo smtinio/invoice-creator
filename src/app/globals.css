@@ -146,11 +146,35 @@
     letter-spacing: -0.005em;
   }
 
+  .type-heading-3-medium {
+    font-family: var(--bertie-font-headline);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 0;
+  }
+
   .type-paragraph-1-regular {
     font-family: var(--bertie-font-text);
     font-size: 16px;
     font-weight: 400;
     line-height: 24px;
+    letter-spacing: 0;
+  }
+
+  .type-paragraph-1-medium {
+    font-family: var(--bertie-font-text);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0;
+  }
+
+  .type-paragraph-2-bold {
+    font-family: var(--bertie-font-text);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 20px;
     letter-spacing: 0;
   }
 

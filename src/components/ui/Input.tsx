@@ -19,12 +19,19 @@ interface InputProps extends Omit<React.ComponentPropsWithoutRef<"input">, "id">
   helperText?: string;
   /** Shown in place of the helper text and switches the field to its error state. */
   error?: string;
+  /**
+   * Hides the label visually but keeps it for screen readers. For grids like
+   * the line-item table, where a column header does the labelling on screen
+   * but each cell still needs its own accessible name.
+   */
+  hideLabel?: boolean;
 }
 
 export function Input({
   label,
   helperText,
   error,
+  hideLabel = false,
   className = "",
   ...inputProps
 }: InputProps) {
@@ -36,7 +43,14 @@ export function Input({
 
   return (
     <div className={`flex w-full flex-col gap-[6px] ${className}`}>
-      <label htmlFor={id} className="type-utility-1-medium w-full text-text-primary">
+      <label
+        htmlFor={id}
+        className={
+          hideLabel
+            ? "sr-only"
+            : "type-utility-1-medium w-full text-text-primary"
+        }
+      >
         {label}
       </label>
 

@@ -145,6 +145,55 @@ export function calculateTotals(input: {
   };
 }
 
+/**
+ * Optional "pay early, pay less" terms, e.g. 2/10 Net 30 — 2% off if paid
+ * within 10 days, otherwise the full amount is due in 30.
+ */
+export interface EarlyPaymentTerms {
+  id: string;
+  label: string;
+  /** 2% = 200. */
+  discountBasisPoints: number;
+  discountDays: number;
+  netDays: number;
+}
+
+/**
+ * The Figma Select shows "2/10 Net 30"; the other options in its menu are not
+ * visible from the frame, so these are the conventional ones. See DESIGN-NOTES.
+ */
+export const EARLY_PAYMENT_TERMS: readonly EarlyPaymentTerms[] = [
+  { id: "2-10-net-30", label: "2/10 Net 30", discountBasisPoints: 200, discountDays: 10, netDays: 30 },
+  { id: "1-10-net-30", label: "1/10 Net 30", discountBasisPoints: 100, discountDays: 10, netDays: 30 },
+  { id: "2-10-net-60", label: "2/10 Net 60", discountBasisPoints: 200, discountDays: 10, netDays: 60 },
+  { id: "3-5-net-30", label: "3/5 Net 30", discountBasisPoints: 300, discountDays: 5, netDays: 30 },
+];
+
+export interface EarlyPaymentOutcome {
+  /** What the client saves by paying early. */
+  discount: Cents;
+  /** What they would pay instead of `total`. */
+  amountIfPaidEarly: Cents;
+}
+
+/**
+ * An early payment discount is conditional — it never changes the invoice
+ * total, it just shows a smaller figure the client can hit by paying early.
+ * That is why this is separate from `calculateTotals`.
+ *
+ * Like the manual discount, it applies to discounted services only. Expenses
+ * are reimbursements of money already spent, not revenue to discount.
+ */
+export function earlyPaymentOutcome(
+  totals: InvoiceTotals,
+  terms: Pick<EarlyPaymentTerms, "discountBasisPoints">,
+): EarlyPaymentOutcome {
+  const discount = roundHalfUp(
+    (totals.discountedServices * terms.discountBasisPoints) / 10_000,
+  );
+  return { discount, amountIfPaidEarly: totals.total - discount };
+}
+
 const usdFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
